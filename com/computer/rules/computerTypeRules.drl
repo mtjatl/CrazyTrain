@@ -1,0 +1,191 @@
+//created on: Apr 23, 2013
+package com.computer.rules
+
+//list any import classes here.
+import com.computer.Computer
+import com.computer.VideoCard
+import com.computer.Attribute
+import java.util.EnumSet
+
+
+//declare any global variables here
+
+
+
+// If a computer has a graphics card and a CPU over 3GHz, it is loud
+rule "Graphics card and CPU speed> 3 GHz"
+salience 10
+    when
+        $c : Computer ( video != VideoCard.NONE, speed > 3)
+    then
+    	$c.addAttribute(Attribute.LOUD);
+    	//$c.addAttr("loud");
+    	//System.out.println($c.getName() + " is loud.");
+
+end
+
+// If a computer has over 16 GB of memory, it is loud.
+rule "Over 16 GB of memory"
+salience 10
+	when
+		$c : Computer ( memory > 16)
+	then
+		$c.addAttribute(Attribute.LOUD);
+		//System.out.println($c.getName() + " is loud.");
+		
+end
+
+// If a computer costs less than $1000, it is cheap
+rule "Less than $1000"
+salience 10
+no-loop
+	when
+		$c : Computer ( price < 1000)
+	then 
+		$c.addAttribute(Attribute.CHEAP);
+		//System.out.println($c.getName() + " is cheap.");
+		
+end
+
+// If a computer costs more than $4000, it is expensive
+rule "More than $4000"
+salience 10
+	when 
+		$c : Computer (price > 4000)
+	then 
+		$c.addAttribute(Attribute.EXPENSIVE);
+		//System.out.println($c.getName() + " is expensive.");
+
+end
+
+// If a computer has more than 8GB of memory or CPU > 4Ghz, it is hot
+rule "more than 8GB of memory or cpu > 4ghz"
+salience 10
+	when 
+		$c : Computer () 
+		eval ($c.getMemory() > 8 || $c.getSpeed() > 4)
+	then
+		$c.addAttribute(Attribute.HOT);
+		//System.out.println($c.getName() + " is hot.");
+		
+end
+
+// If a computer is cheap and hot, it is risky
+rule " cheap and hot"
+salience 10	
+	when 
+		$c : Computer ()
+		eval (($c.getMemory() > 8 || $c.getSpeed() > 4) && $c.getPrice() < 1000)
+	then 
+		$c.addAttribute(Attribute.RISKY);
+		//System.out.println($c.getName() + " is risky.");
+end
+
+// If a computer has a premium graphics card, it can game
+rule "premium graphics card"
+salience 10
+	when 
+		$c : Computer ( video == VideoCard.PREMIUM)
+	then 
+		$c.addAttribute(Attribute.GAME);
+		$c.addAttribute(Attribute.CRUNCH);
+		//System.out.println($c.getName() + " can game");
+		//System.out.println($c.getName() + " can crunch numbers");
+		
+end
+
+// If it has a graphics card and cpu > 2ghz, it can game
+rule "graphics card and cpu > 2 ghz"
+salience 10	
+	when 
+		$c : Computer (video != VideoCard.NONE, speed > 2)
+	then 
+		$c.addAttribute(Attribute.GAME);
+		//System.out.println($c.getName() + " can game");
+		
+end
+
+// It it has a cpu > 4 ghz and over 4 gb of memory, it can crunch numbers
+rule "cpu > 4 and memory > 4"
+salience 10
+	when 
+		$c : Computer (speed > 4, memory > 4)
+	then 
+		$c.addAttribute(Attribute.CRUNCH);
+		//System.out.println($c.getName() + " can crunch numbers");
+
+end
+
+//Risky computers are worse
+rule "risky are worst"
+salience 0
+no-loop
+activation-group "only one"
+	when
+		$first : Computer ()
+		$second : Computer ()
+		eval ((($first.getMemory() > 8 || $first.getSpeed() > 4) && $first.getPrice() < 1000)  && 
+				!(($second.getMemory() > 8 || $second.getSpeed() > 4) && $second.getPrice() < 1000))
+	then
+		System.out.println($first.getName() + " is a worse buy than " + $second.getName());
+end
+
+//cant game or crunch worse than either
+rule "game or crunch"
+salience -10
+no-loop
+activation-group "only one"
+	when
+		$first : Computer ()
+		$second : Computer ()
+		eval (($first.getVideo() == VideoCard.PREMIUM || ($first.getVideo() != VideoCard.NONE && $first.getSpeed() > 2) || 
+				($first.getSpeed() > 4 && $first.getMemory() > 4)) && 
+				!($second.getVideo() == VideoCard.PREMIUM || ($second.getVideo() != VideoCard.NONE && $second.getSpeed() > 2) || 
+				($second.getSpeed() > 4 && $second.getMemory() > 4)))
+	then
+		System.out.println($second.getName() + " is a worse buy than " + $first.getName());
+end
+
+// cheap or expensive
+rule "cheap or expensive"
+salience -20 
+no-loop
+activation-group "only one"
+	when
+		$first : Computer ()
+		$second : Computer ()
+		eval ($first.getPrice() < 1000 && $second.getPrice() > 4000)
+	then
+		System.out.println($second.getName() + " is a worse buy than " + $first.getName());
+end
+
+// cheap or expensive
+rule "game better than crunch"
+salience -30 
+no-loop
+activation-group "only one"
+	when
+		$first : Computer ()
+		$second : Computer ()
+		eval (($first.getVideo() == VideoCard.PREMIUM || ($first.getVideo() != VideoCard.NONE && $first.getSpeed() > 2)) && 
+				(!($second.getVideo() == VideoCard.PREMIUM || ($second.getVideo() != VideoCard.NONE && $second.getSpeed() > 2))) &&
+				($second.getSpeed() > 4 && $second.getMemory() > 4))
+	then
+		System.out.println($second.getName() + " is a worse buy than " + $first.getName());
+end		
+
+/*
+// Risky computers are the worst buy
+rule "risky are worst"
+salience 0
+	when 
+		$c : Computer()
+		eval($c.containsAttribute(Attribute.RISKY))
+		WHY DOES THIS NOT WORK
+		
+	then
+		System.out.println($c.getName() + "is a Worst Buy.");
+		
+end
+
+*/
