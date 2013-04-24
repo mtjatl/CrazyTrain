@@ -1,8 +1,6 @@
 package com.computer;
 
 
-import java.util.ArrayList;
-
 import org.drools.KnowledgeBase;
 import org.drools.KnowledgeBaseFactory;
 import org.drools.builder.KnowledgeBuilder;
@@ -39,11 +37,7 @@ public class testComputer {
 		Computer machine5 = new Computer("Ozzy (machine5)", 32, 5, VideoCard.NONE, 8000);
 		Computer machine6 = new Computer("Robert (machine6)", 2, 2, VideoCard.PREMIUM, 5500);
 		Computer[] computers = {machine1, machine2, machine3, machine4, machine5};
-		ArrayList<Computer> computerList = new ArrayList<Computer>();
-		for(int i = 0; i < 5; i++) {
-			computerList.add(computers[i]);
-		}
-		
+				
 		// Create session and fire all rules
 		try {
 			KnowledgeBuilder builder = KnowledgeBuilderFactory.newKnowledgeBuilder();
